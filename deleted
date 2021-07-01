@@ -1,0 +1,215 @@
+  //mirar en qué dirección está la salida
+  //puede moverse en esa dirección
+  //moverse (cambiar su posición)
+
+  if (thomas.position.row === exit.position.row) {
+    if (thomas.position.column > exit.position.column) {
+      if (checkWalls(thomas, "L")) {
+        console.log("paso");
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "L");
+        //cambiar posicion
+        thomas.position.column -= 1;
+        console.log(thomas.position);
+      }
+    } else {
+      if (checkWalls(thomas, "R")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "R");
+
+        //cambiar posicion
+        thomas.position.column += 1;
+        console.log(thomas.position);
+      }
+    }
+    //mueva horiz hacia exit
+  } else if (thomas.position.column === exit.position.column) {
+    if (thomas.position.row > exit.position.row) {
+      if (checkWalls(thomas, "T")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "T");
+        //cambiar posicion
+        thomas.position.row -= 1;
+        console.log(thomas.position);
+      }
+    } else {
+      if (checkWalls(thomas, "B")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "B");
+
+        //cambiar posicion
+        thomas.position.column += 1;
+        console.log(thomas.position);
+      }
+    }
+    //mueva vert hacia exit
+  } else if (
+    thomas.position.row !== exit.position.row &&
+    thomas.position.column !== exit.position.column
+  ) {
+    if (thomas.position.row < exit.position.row) {
+      if (checkWalls(thomas, "B")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "B");
+
+        //cambiar posicion
+        thomas.position.row += 1;
+        console.log(thomas.position);
+      }
+    } else if (thomas.position.row > exit.position.row) {
+      if (checkWalls(thomas, "T")) {
+        console.log("next");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "T");
+
+        //cambiar posicion
+        thomas.position.row -= 1;
+        console.log(thomas.position);
+      }
+    } else if (thomas.position.column > exit.position.column) {
+      if (checkWalls(thomas, "L")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "L");
+
+        //cambiar posicion
+        thomas.position.column -= 1;
+        console.log(thomas.position);
+      }
+    } else {
+      if (checkWalls(thomas, "R")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "R");
+
+        //cambiar posicion
+        thomas.position.column += 1;
+        console.log(thomas.position);
+      }
+    }
+    //moverse direccion exit no bloqueada
+  } else {
+    console.log("paso");
+    //no se mueve
+  }
+
+
+
+
+  ********************************* NUEVO *****************************
+  ********************************* THOMAS *****************************
+
+
+
+  *********************************GRAPH *****************************
+
+
+
+
+*********************************  CHECKGAME  *****************************
+
+const { thomas } = require("../characters/thomas");
+const { wolf } = require("../characters/wolf");
+const { exit } = require("./exit");
+
+const checkGameState = () => {
+  console.log(thomas);
+  console.log(wolf);
+  if (
+    thomas.position.row === exit.position.row &&
+    thomas.position.column === exit.position.column
+  ) {
+    console.log("YOU WIN!");
+    return false;
+  } else if (
+    thomas.position.row === wolf.position.row &&
+    thomas.position.column === wolf.position.column
+  ) {
+    console.log("YOU LOSE!");
+    return false;
+  }
+  return true;
+};
+
+module.exports = {
+  checkGameState,
+};
+
+*********************************  WOLF  *****************************
+
+
+if (wolf.position.row < thomas.position.row) {
+      if (checkWalls(wolf, "B")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "B");
+
+        //cambiar posicion
+        wolf.position.row += 1;
+        console.log(wolf.position);
+      }
+    } else if (wolf.position.row > thomas.position.row) {
+      if (checkWalls(wolf, "T")) {
+        console.log("next");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "T");
+
+        //cambiar posicion
+        wolf.position.row -= 1;
+        console.log(wolf.position);
+      }
+    } else if (wolf.position.column > thomas.position.column) {
+      if (checkWalls(wolf, "L")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "L");
+
+        //cambiar posicion
+        wolf.position.column -= 1;
+        console.log(wolf.position);
+      }
+    } else {
+      if (checkWalls(wolf, "R")) {
+        console.log("paso");
+
+        //pasar turno
+      } else {
+        console.log("muevo hacia " + "R");
+
+        //cambiar posicion
+        wolf.position.column += 1;
+        console.log(wolf.position);
+      }
+    }
+
+
+
+
+      if (parseInt(path[0].split("")[0]) - wolf.position.row < 2 && parseInt(path[0].split("")[1]) - wolf.position.column < 2) {
+    console.log("Este camino es demasiado peligroso.")
+  }

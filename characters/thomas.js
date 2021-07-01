@@ -1,6 +1,5 @@
 const { data } = require("../common/jsonData");
 const { exit } = require("../common/exit");
-const { checkWalls } = require("../common/checkWalls");
 
 let thomas = {
   state: 0,
@@ -11,229 +10,174 @@ let thomas = {
 };
 
 let thomasAction = () => {
-  //mirar en qué dirección está la salida
-  //puede moverse en esa dirección
-  //moverse (cambiar su posición)
+  let currentPath = g
+    .shortestPath(
+      thomas.position.row.toString() + thomas.position.column.toString(),
+      exit.position.row.toString() + exit.position.column.toString()
+    )
+    .reverse();
+  console.log(currentPath);
 
-  if (thomas.position.row === exit.position.row) {
-    if (thomas.position.column > exit.position.column) {
-      if (checkWalls(thomas, "L")) {
-        console.log("paso");
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "L");
-        //cambiar posicion
-        thomas.position.column -= 1;
-        console.log(thomas.position);
-      }
-    } else {
-      if (checkWalls(thomas, "R")) {
-        console.log("paso");
+  //move to first position in returned array = update thomas position
+  thomas.position.row = parseInt(currentPath[0].split("")[0]);
+  thomas.position.column = parseInt(currentPath[0].split("")[1]);
+  console.log("Thomas' position", thomas.position);
 
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "R");
-
-        //cambiar posicion
-        thomas.position.column += 1;
-        console.log(thomas.position);
-      }
-    }
-    //mueva horiz hacia exit
-  } else if (thomas.position.column === exit.position.column) {
-    if (thomas.position.row > exit.position.row) {
-      if (checkWalls(thomas, "T")) {
-        console.log("paso");
-
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "T");
-        //cambiar posicion
-        thomas.position.row -= 1;
-        console.log(thomas.position);
-      }
-    } else {
-      if (checkWalls(thomas, "B")) {
-        console.log("paso");
-
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "B");
-
-        //cambiar posicion
-        thomas.position.column += 1;
-        console.log(thomas.position);
-      }
-    }
-    //mueva vert hacia exit
-  } else if (
-    thomas.position.row !== exit.position.row &&
-    thomas.position.column !== exit.position.column
+  //check game state
+  if (
+    exit.position.row === thomas.position.row &&
+    exit.position.column === thomas.position.column
   ) {
-    if (thomas.position.row < exit.position.row) {
-      if (checkWalls(thomas, "B")) {
-        console.log("paso");
+    thomas.state = 1;
+  }
+};
 
-        //pasar turno
+/**
+ * Basic priority queue implementation. If a better priority queue is wanted/needed,
+ * this code works with the implementation in google's closure library (https://code.google.com/p/closure-library/).
+ * Use goog.require('goog.structs.PriorityQueue'); and new goog.structs.PriorityQueue()
+ */
+function PriorityQueue() {
+  this._nodes = [];
+
+  this.enqueue = function (priority, key) {
+    this._nodes.push({ key: key, priority: priority });
+    this.sort();
+  };
+  this.dequeue = function () {
+    return this._nodes.shift().key;
+  };
+  this.sort = function () {
+    this._nodes.sort(function (a, b) {
+      return a.priority - b.priority;
+    });
+  };
+  this.isEmpty = function () {
+    return !this._nodes.length;
+  };
+}
+
+/**
+ * Pathfinding starts here
+ */
+function Graph() {
+  var INFINITY = 1 / 0;
+  this.vertices = {};
+
+  this.addVertex = function (name, edges) {
+    this.vertices[name] = edges;
+  };
+
+  this.shortestPath = function (start, finish) {
+    var nodes = new PriorityQueue(),
+      distances = {},
+      previous = {},
+      path = [],
+      smallest,
+      vertex,
+      neighbor,
+      alt;
+
+    for (vertex in this.vertices) {
+      if (vertex === start) {
+        distances[vertex] = 0;
+        nodes.enqueue(0, vertex);
       } else {
-        console.log("muevo hacia " + "B");
-
-        //cambiar posicion
-        thomas.position.row += 1;
-        console.log(thomas.position);
+        distances[vertex] = INFINITY;
+        nodes.enqueue(INFINITY, vertex);
       }
-    } else if (thomas.position.row > exit.position.row) {
-      if (checkWalls(thomas, "T")) {
-        console.log("next");
 
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "T");
+      previous[vertex] = null;
+    }
 
-        //cambiar posicion
-        thomas.position.row -= 1;
-        console.log(thomas.position);
+    while (!nodes.isEmpty()) {
+      smallest = nodes.dequeue();
+
+      if (smallest === finish) {
+        path = [];
+
+        while (previous[smallest]) {
+          path.push(smallest);
+          smallest = previous[smallest];
+        }
+
+        break;
       }
-    } else if (thomas.position.column > exit.position.column) {
-      if (checkWalls(thomas, "L")) {
-        console.log("paso");
 
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "L");
-
-        //cambiar posicion
-        thomas.position.column -= 1;
-        console.log(thomas.position);
+      if (!smallest || distances[smallest] === INFINITY) {
+        continue;
       }
-    } else {
-      if (checkWalls(thomas, "R")) {
-        console.log("paso");
 
-        //pasar turno
-      } else {
-        console.log("muevo hacia " + "R");
+      for (neighbor in this.vertices[smallest]) {
+        alt = distances[smallest] + this.vertices[smallest][neighbor];
 
-        //cambiar posicion
-        thomas.position.column += 1;
-        console.log(thomas.position);
+        if (alt < distances[neighbor]) {
+          distances[neighbor] = alt;
+          previous[neighbor] = smallest;
+
+          nodes.enqueue(alt, neighbor);
+        }
       }
     }
-    //moverse direccion exit no bloqueada
-  } else {
-    console.log("paso");
-    //no se mueve
-  }
-};
 
-const findBestRoute = () => {
-  /**
-   * Basic priority queue implementation. If a better priority queue is wanted/needed,
-   * this code works with the implementation in google's closure library (https://code.google.com/p/closure-library/).
-   * Use goog.require('goog.structs.PriorityQueue'); and new goog.structs.PriorityQueue()
-   */
-  function PriorityQueue() {
-    this._nodes = [];
+    return path;
+  };
+}
 
-    this.enqueue = function (priority, key) {
-      this._nodes.push({ key: key, priority: priority });
-      this.sort();
-    };
-    this.dequeue = function () {
-      return this._nodes.shift().key;
-    };
-    this.sort = function () {
-      this._nodes.sort(function (a, b) {
-        return a.priority - b.priority;
-      });
-    };
-    this.isEmpty = function () {
-      return !this._nodes.length;
-    };
-  }
+var g = new Graph();
 
-  /**
-   * Pathfinding starts here
-   */
-  function Graph() {
-    var INFINITY = 1 / 0;
-    this.vertices = {};
+//pendiente crear función que convierta puzzle en graph
+g.addVertex("11", { 12: 1, 21: 1 });
+g.addVertex("12", { 13: 1, 11: 1 });
+g.addVertex("13", { 12: 1, 14: 1 });
+g.addVertex("14", { 13: 1, 15: 1, 24: 1 });
+g.addVertex("15", { 14: 1, 16: 1, 25: 1 });
+g.addVertex("16", { 15: 1, 17: 1 });
+g.addVertex("17", { 16: 1, 27: 1 });
+g.addVertex("21", { 11: 1, 31: 1 });
+g.addVertex("22", { 23: 1 });
+g.addVertex("23", { 22: 1, 24: 1 });
+g.addVertex("24", { 14: 1, 23: 1, 34: 1 });
+g.addVertex("25", { 15: 1, 26: 1, 35: 1 });
+g.addVertex("26", { 25: 1, 36: 1 });
+g.addVertex("27", { 17: 1, 37: 1 });
+g.addVertex("31", { 21: 1, 41: 1 });
+g.addVertex("32", { 33: 1, 42: 1 });
+g.addVertex("33", { 32: 1, 34: 1, 43: 1 });
+g.addVertex("34", { 24: 1, 33: 1, 44: 1 });
+g.addVertex("35", { 25: 1, 45: 1 });
+g.addVertex("36", { 26: 1, 46: 1 });
+g.addVertex("37", { 27: 1, 47: 1 });
+g.addVertex("41", { 31: 1, 51: 1 });
+g.addVertex("42", { 32: 1, 43: 1, 52: 1 });
+g.addVertex("43", { 33: 1, 42: 1, 44: 1, 53: 1 });
+g.addVertex("44", { 34: 1, 43: 1, 45: 1 });
+g.addVertex("45", { 35: 1, 44: 1, 55: 1 });
+g.addVertex("46", { 36: 1, 56: 1 });
+g.addVertex("47", { 37: 1, 57: 1 });
+g.addVertex("51", { 41: 1, 61: 1 });
+g.addVertex("52", { 42: 1, 62: 1 });
+g.addVertex("53", { 43: 1, 54: 1 });
+g.addVertex("54", { 53: 1, 55: 1, 64: 1 });
+g.addVertex("55", { 45: 1, 54: 1, 65: 1 });
+g.addVertex("56", { 46: 1, 66: 1 });
+g.addVertex("57", { 47: 1, 57: 1 });
+g.addVertex("61", { 51: 1, 71: 1 });
+g.addVertex("62", { 52: 1, 72: 1 });
+g.addVertex("63", { 64: 1 });
+g.addVertex("64", { 54: 1, 63: 1, 65: 1 });
+g.addVertex("65", { 55: 1, 64: 1 });
+g.addVertex("66", { 56: 1, 76: 1 });
+g.addVertex("67", { 57: 1, 77: 1 });
+g.addVertex("71", { 61: 1 });
+g.addVertex("72", { 62: 1, 73: 1 });
+g.addVertex("73", { 72: 1, 74: 1 });
+g.addVertex("74", { 73: 1, 75: 1 });
+g.addVertex("75", { 74: 1, 76: 1 });
+g.addVertex("76", { 66: 1, 75: 1, 77: 1 });
+g.addVertex("77", { 67: 1, 76: 1 });
 
-    this.addVertex = function (name, edges) {
-      this.vertices[name] = edges;
-    };
-
-    this.shortestPath = function (start, finish) {
-      var nodes = new PriorityQueue(),
-        distances = {},
-        previous = {},
-        path = [],
-        smallest,
-        vertex,
-        neighbor,
-        alt;
-
-      for (vertex in this.vertices) {
-        if (vertex === start) {
-          distances[vertex] = 0;
-          nodes.enqueue(0, vertex);
-        } else {
-          distances[vertex] = INFINITY;
-          nodes.enqueue(INFINITY, vertex);
-        }
-
-        previous[vertex] = null;
-      }
-
-      while (!nodes.isEmpty()) {
-        smallest = nodes.dequeue();
-
-        if (smallest === finish) {
-          path = [];
-
-          while (previous[smallest]) {
-            path.push(smallest);
-            smallest = previous[smallest];
-          }
-
-          break;
-        }
-
-        if (!smallest || distances[smallest] === INFINITY) {
-          continue;
-        }
-
-        for (neighbor in this.vertices[smallest]) {
-          alt = distances[smallest] + this.vertices[smallest][neighbor];
-
-          if (alt < distances[neighbor]) {
-            distances[neighbor] = alt;
-            previous[neighbor] = smallest;
-
-            nodes.enqueue(alt, neighbor);
-          }
-        }
-      }
-
-      return path;
-    };
-  }
-
-  var g = new Graph();
-
-  g.addVertex("A", { B: 7, C: 8 });
-  g.addVertex("B", { A: 7, F: 2 });
-  g.addVertex("C", { A: 8, F: 6, G: 4 });
-  g.addVertex("D", { F: 8 });
-  g.addVertex("E", { H: 1 });
-  g.addVertex("F", { B: 2, C: 6, D: 8, G: 9, H: 3 });
-  g.addVertex("G", { C: 4, F: 9 });
-  g.addVertex("H", { E: 1, F: 3 });
-
-  // Log test, with the addition of reversing the path and prepending the first node so it's more readable
-  console.log(g.shortestPath("A", "H").concat(["A"]).reverse());
-};
-
-findBestRoute();
+// Log test, with the addition of reversing the path and prepending the first node so it's more readable
+// console.log(g.shortestPath("A", "H").concat(["A"]).reverse());
 
 module.exports = { thomas, thomasAction };

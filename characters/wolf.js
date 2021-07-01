@@ -1,6 +1,11 @@
 const { data } = require("../common/jsonData");
 const { checkWalls } = require("../common/checkWalls");
+const {
+  distanceBetweenCharacters,
+} = require("../common/distanceBetweenCharacters");
 const { thomas } = require("./thomas");
+
+distanceBetweenCharacters;
 
 let wolf = {
   state: 0,
@@ -15,6 +20,7 @@ let wolfAction = () => {
   //puede moverse en esa dirección
   //moverse (cambiar su posición)
 
+  //mueva horiz hacia thomas
   if (wolf.position.row === thomas.position.row) {
     if (wolf.position.column > thomas.position.column) {
       if (checkWalls(wolf, "L")) {
@@ -39,7 +45,7 @@ let wolfAction = () => {
         console.log(wolf.position);
       }
     }
-    //mueva horiz hacia thomas
+    //mueva vert hacia thomas
   } else if (wolf.position.column === thomas.position.column) {
     if (wolf.position.row > thomas.position.row) {
       if (checkWalls(wolf, "T")) {
@@ -61,18 +67,18 @@ let wolfAction = () => {
         console.log("muevo hacia " + "B");
 
         //cambiar posicion
-        wolf.position.column += 1;
+        wolf.position.row += 1;
         console.log(wolf.position);
       }
     }
-    //mueva vert hacia thomas
+    //moverse direccion thomas no bloqueada
   } else if (
     wolf.position.row !== thomas.position.row &&
     wolf.position.column !== thomas.position.column
   ) {
     if (wolf.position.row < thomas.position.row) {
       if (checkWalls(wolf, "B")) {
-        console.log("paso");
+        console.log("continue");
 
         //pasar turno
       } else {
@@ -81,8 +87,10 @@ let wolfAction = () => {
         //cambiar posicion
         wolf.position.row += 1;
         console.log(wolf.position);
+        return;
       }
-    } else if (wolf.position.row > thomas.position.row) {
+    }
+    if (wolf.position.row > thomas.position.row) {
       if (checkWalls(wolf, "T")) {
         console.log("next");
 
@@ -93,8 +101,10 @@ let wolfAction = () => {
         //cambiar posicion
         wolf.position.row -= 1;
         console.log(wolf.position);
+        return;
       }
-    } else if (wolf.position.column > thomas.position.column) {
+    }
+    if (wolf.position.column > thomas.position.column) {
       if (checkWalls(wolf, "L")) {
         console.log("paso");
 
@@ -105,8 +115,10 @@ let wolfAction = () => {
         //cambiar posicion
         wolf.position.column -= 1;
         console.log(wolf.position);
+        return;
       }
-    } else {
+    }
+    if (wolf.position.column < thomas.position.column) {
       if (checkWalls(wolf, "R")) {
         console.log("paso");
 
@@ -119,12 +131,23 @@ let wolfAction = () => {
         console.log(wolf.position);
       }
     }
-    //moverse direccion thomas no bloqueada
   } else {
     console.log("paso");
     //no se mueve
   }
+
+  checkGameState();
 };
+
+function checkGameState() {
+  if (
+    wolf.position.row === thomas.position.row &&
+    wolf.position.column === thomas.position.column
+  ) {
+    wolf.state = 2;
+    thomas.state = 2;
+  }
+}
 
 module.exports = {
   wolf,
